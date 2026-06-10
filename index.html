@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactics of the Realm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        #ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud-top {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #d4af37;
+            padding: 15px 25px;
+            border: 2px solid #8b7355;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 11;
+            pointer-events: auto;
+        }
+
+        .hud-bottom-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #d4af37;
+            padding: 20px;
+            border: 2px solid #8b7355;
+            border-radius: 5px;
+            z-index: 11;
+            pointer-events: auto;
+            min-height: 80px;
+            display: none;
+        }
+
+        .hud-bottom-panel.active {
+            display: block;
+        }
+
+        .unit-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .unit-stats {
+            flex: 1;
+        }
+
+        .unit-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-row {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .stat-row span {
+            min-width: 80px;
+        }
+
+        .hp-bar-container {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border: 2px solid #666;
+            position: relative;
+            margin-top: 8px;
+        }
+
+        .hp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .hp-bar.damaged {
+            background: linear-gradient(90deg, #f44336, #e91e63);
+        }
+
+        .hp-text {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .end-turn-btn {
+            padding: 12px 30px;
+            background: #d4af37;
+            border: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+            pointer-events: auto;
+        }
+
+        .end-turn-btn:hover:not(:disabled) {
+            background: #f4df57;
+            transform: scale(1.05);
+        }
+
+        .end-turn-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            color: #d4af37;
+            padding: 10px 15px;
+            border: 1px solid #8b7355;
+            border-radius: 3px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 12;
+            display: none;
+            white-space: nowrap;
+        }
+
+        .tooltip.active {
+            display: block;
+        }
+
+        #turn-log {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #d4af37;
+            padding: 15px;
+            border: 2px solid #8b7355;
+            border-radius: 3px;
+            font-size: 12px;
+            max-width: 250px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 11;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 3px 0;
+            border-bottom: 1px solid #666;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    
+    <div id="ui-overlay">
+        <div class="hud-top">
+            <span id="turn-status">Turn 1 — Player's Turn</span>
+        </div>
+
+        <div class="hud-bottom-panel" id="unit-panel">
+            <div class="unit-info">
+                <div class="unit-stats">
+                    <div class="unit-name" id="unit-name">Soldier</div>
+                    <div class="hp-bar-container">
+                        <div class="hp-bar" id="hp-bar" style="width: 100%;"></div>
+                        <div class="hp-text" id="hp-text">80/80</div>
+                    </div>
+                    <div class="stat-row">
+                        <span>ATK: <span id="stat-atk">25</span></span>
+                        <span>DEF: <span id="stat-def">15</span></span>
+                        <span>MOV: <span id="stat-mov">3</span></span>
+                        <span>RNG: <span id="stat-rng">1</span></span>
+                    </div>
+                    <div style="font-size: 13px; margin-top: 8px; color: #a8a8a8;">
+                        <span id="ability-desc">Standard melee attack</span>
+                    </div>
+                </div>
+                <button class="end-turn-btn" id="end-turn-btn">End Turn</button>
+            </div>
+        </div>
+
+        <div id="turn-log">
+            <div class="log-entry">Game started</div>
+        </div>
+
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <!-- Phaser 3 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+
+    <!-- Game Systems -->
+    <script src="src/systems/GridSystem.js"></script>
+    <script src="src/systems/UnitSystem.js"></script>
+    <script src="src/systems/CombatSystem.js"></script>
+    <script src="src/systems/TurnSystem.js"></script>
+    <script src="src/systems/AISystem.js"></script>
+    <script src="src/systems/ProgressionSystem.js"></script>
+
+    <!-- Game Data -->
+    <script src="src/data/gameState.js"></script>
+    <script src="src/data/units.js"></script>
+    <script src="src/data/maps.js"></script>
+    <script src="src/data/balance.js"></script>
+
+    <!-- Scenes -->
+    <script src="src/scenes/BootScene.js"></script>
+    <script src="src/scenes/MenuScene.js"></script>
+    <script src="src/scenes/MapScene.js"></script>
+    <script src="src/scenes/UIScene.js"></script>
+    <script src="src/scenes/VictoryScene.js"></script>
+
+    <!-- Main -->
+    <script src="src/main.js"></script>
+</body>
+</html>
