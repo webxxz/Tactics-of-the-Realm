@@ -15,6 +15,7 @@ class ProgressionSystem {
             Rogue: { hp: 0, atk: 0, mov: 0 },
         };
         this.currentMap = 0;
+        this.completedMaps = [];
     }
 
     /**
@@ -52,6 +53,23 @@ class ProgressionSystem {
     }
 
     /**
+     * Mark map as completed and unlock next map index
+     */
+    completeMap(mapIndex) {
+        if (!this.completedMaps.includes(mapIndex)) {
+            this.completedMaps.push(mapIndex);
+        }
+        this.currentMap = Math.max(this.currentMap, mapIndex + 1);
+    }
+
+    /**
+     * Whether a map index is unlocked
+     */
+    isMapUnlocked(mapIndex) {
+        return mapIndex <= this.currentMap;
+    }
+
+    /**
      * Get upgrade modifier for a unit stat
      */
     getUpgradeBonus(unitType, statType) {
@@ -70,6 +88,7 @@ class ProgressionSystem {
         this.unlockedUnits = saveData.unlockedUnits || this.unlockedUnits;
         this.unitUpgrades = saveData.unitUpgrades || this.unitUpgrades;
         this.currentMap = saveData.currentMap || 0;
+        this.completedMaps = saveData.completedMaps || [];
     }
 
     /**
@@ -81,6 +100,7 @@ class ProgressionSystem {
             unlockedUnits: this.unlockedUnits,
             unitUpgrades: this.unitUpgrades,
             currentMap: this.currentMap,
+            completedMaps: this.completedMaps,
         };
     }
 }
