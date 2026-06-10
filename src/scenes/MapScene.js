@@ -14,7 +14,8 @@ class MapScene extends Phaser.Scene {
     create() {
         GameState.init(this);
 
-        this.currentMap = MAPS[0];
+        this.currentMapIndex = 0;
+        this.currentMap = MAPS[this.currentMapIndex];
         GameState.grid = new GridSystem(this, this.currentMap.width, this.currentMap.height, 64);
         GameState.ai = new AISystem(GameState.grid, GameState.combat);
 
@@ -331,7 +332,7 @@ class MapScene extends Phaser.Scene {
             GameState.gameOver = true;
             this.processingEnemyTurn = false;
             GameState.progression.addGold(this.currentMap.goldReward || 0);
-            GameState.progression.completeMap(0);
+            GameState.progression.completeMap(this.currentMapIndex);
             this.transitionToVictory(true);
             return true;
         }
