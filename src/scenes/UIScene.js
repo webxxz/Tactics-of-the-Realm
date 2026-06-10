@@ -66,6 +66,7 @@ class UIScene extends Phaser.Scene {
         if (!data) {
             console.warn(`Missing UNIT_DATA for ${unit.type}`);
         }
+        const unitData = data || { ability: 'No ability' };
         const hpPercent = Math.max(0, (unit.currentHP / unit.maxHP) * 100);
 
         this.dom.unitPanel.classList.add('active');
@@ -77,7 +78,7 @@ class UIScene extends Phaser.Scene {
         this.dom.statDef.textContent = unit.def;
         this.dom.statMov.textContent = unit.mov;
         this.dom.statRng.textContent = unit.rng;
-        this.dom.abilityDesc.textContent = data ? data.ability : 'No ability';
+        this.dom.abilityDesc.textContent = unitData.ability;
     }
 
     addLogEntry(message) {

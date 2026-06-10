@@ -2,6 +2,9 @@
  * MapScene.js — Core battle loop scene
  */
 
+const UNIT_VERTICAL_OFFSET = 18;
+const HP_BAR_VERTICAL_OFFSET = 26;
+
 class MapScene extends Phaser.Scene {
     constructor() {
         super({ key: 'MapScene' });
@@ -53,7 +56,7 @@ class MapScene extends Phaser.Scene {
 
         const screen = this.getUnitScreenPosition(unit);
         const textureKey = `unit-${unit.type}`;
-        const sprite = this.add.image(screen.x, screen.y - 18, textureKey).setDepth(screen.y + 20);
+        const sprite = this.add.image(screen.x, screen.y - UNIT_VERTICAL_OFFSET, textureKey).setDepth(screen.y + 20);
 
         if (!this.textures.exists(textureKey)) {
             sprite.setTint(UNIT_DATA[unit.type] ? UNIT_DATA[unit.type].color : 0x999999);
@@ -129,12 +132,12 @@ class MapScene extends Phaser.Scene {
         this.tweens.add({
             targets: [visuals.sprite, visuals.hpBg, visuals.hpFill],
             x: `+=${target.x - visuals.sprite.x}`,
-            y: `+=${(target.y - 18) - visuals.sprite.y}`,
+            y: `+=${(target.y - UNIT_VERTICAL_OFFSET) - visuals.sprite.y}`,
             duration: 280,
             ease: 'Sine.easeInOut',
             onUpdate: () => {
                 visuals.hpBg.x = visuals.sprite.x;
-                visuals.hpBg.y = visuals.sprite.y - 26;
+                visuals.hpBg.y = visuals.sprite.y - HP_BAR_VERTICAL_OFFSET;
                 visuals.hpFill.x = visuals.hpBg.x - 20;
                 visuals.hpFill.y = visuals.hpBg.y;
                 visuals.sprite.setDepth(visuals.sprite.y + 40);
@@ -321,7 +324,7 @@ class MapScene extends Phaser.Scene {
             this.handleUnitDefeat(defender);
         }
 
-        this.emitUnitSelection(this.selectedUnit);
+        this.emitUnitSelection(null);
     }
 
     checkBattleEnd() {

@@ -41,7 +41,5 @@ class VictoryScene extends Phaser.Scene {
             this.scene.stop('UIScene');
             this.scene.start('MenuScene');
         });
-
-        label.setDepth(1);
     }
 }

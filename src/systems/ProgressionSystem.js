@@ -66,7 +66,7 @@ class ProgressionSystem {
      * Whether a map index is unlocked
      */
     isMapUnlocked(mapIndex) {
-        return mapIndex <= this.currentMap;
+        return mapIndex < this.currentMap;
     }
 
     /**
