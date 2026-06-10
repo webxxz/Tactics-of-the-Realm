@@ -14,7 +14,7 @@ class AISystem {
     decideAction(aiUnit, playerUnits) {
         if (aiUnit.isDead) return null;
 
-        // Find nearest player unit within MOV + RNG range
+        // Find nearest alive player unit
         let nearest = null;
         let nearestDistance = Infinity;
 
@@ -22,7 +22,7 @@ class AISystem {
             if (pUnit.isDead) continue;
 
             const distance = Math.max(Math.abs(aiUnit.x - pUnit.x), Math.abs(aiUnit.y - pUnit.y));
-            if (distance < nearestDistance && distance <= aiUnit.mov + aiUnit.rng) {
+            if (distance < nearestDistance) {
                 nearest = pUnit;
                 nearestDistance = distance;
             }
